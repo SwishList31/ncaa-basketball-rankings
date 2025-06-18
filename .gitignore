@@ -1,0 +1,41 @@
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Environment variables
+.env
+
+# Data files we don't want to share
+kenpom_*.csv
+*validation*
+*analysis*
+*test*
+*diagnostic*
+
+# Model development files
+model_v*.py
+byu_analysis.py
+create_*.py
+run_*.py
+simple_*.py
+working_*.py
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Keep only essential files
+# ncaa_rankings_website.py
+# requirements.txt
+# data/final_predictive_rankings_v3.csv
