@@ -483,67 +483,44 @@ with tab4:
 with tab5:
     st.subheader("Contact Swish List")
     
-    col1, col2 = st.columns([2, 1])
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    with col1:
+    with col2:
         st.markdown("""
         ### Get in Touch
         
         Have questions about the rankings? Want to report an issue? 
-        Interested in collaborating? We'd love to hear from you!
+        Interested in collaborating? Found a bug in the model?
+        
+        We'd love to hear from you!
         """)
         
-        # Create contact form
-        with st.form("contact_form"):
-            st.markdown("#### Send us a message")
-            
-            # Form fields
-            name = st.text_input("Your Name*", placeholder="John Doe")
-            email = st.text_input("Your Email*", placeholder="john@example.com")
-            subject = st.selectbox(
-                "Subject*",
-                ["General Inquiry", "Bug Report", "Collaboration", "Media Request", "Other"]
-            )
-            message = st.text_area(
-                "Message*", 
-                placeholder="Tell us what's on your mind...",
-                height=150
-            )
-            
-            # Submit button
-            submitted = st.form_submit_button("Send Message", use_container_width=True)
-            
-            if submitted:
-                if name and email and message:
-                    # Create mailto link
-                    mailto_link = f"mailto:mitchwatkins@gmail.com?subject=Swish List - {subject}: {name}&body=From: {name}%0D%0AEmail: {email}%0D%0A%0D%0AMessage:%0D%0A{message.replace(' ', '%20').replace('\n', '%0D%0A')}"
-                    
-                    st.success("✅ Thank you for your message! Click the link below to send via email:")
-                    st.markdown(f"[📧 Send Email](mailto:mitchwatkins@gmail.com?subject=Swish%20List%20-%20{subject}:%20{name}&body=From:%20{name}%0D%0AEmail:%20{email}%0D%0A%0D%0AMessage:%0D%0A{message.replace(' ', '%20').replace('\n', '%0D%0A')})")
-                    st.info("Note: This will open your default email client with the message pre-filled.")
-                else:
-                    st.error("Please fill in all required fields.")
-    
-    with col2:
-        st.markdown("### Quick Info")
+        st.markdown("---")
+        
+        # Contact info with nice formatting
+        st.markdown("""
+        <div style='text-align: center; padding: 20px; background-color: #FFF5F0; border-radius: 10px; border: 2px solid #FF6B35;'>
+            <h3 style='color: #FF6B35; margin-bottom: 20px;'>Reach Out</h3>
+            <p style='font-size: 1.2rem; margin: 10px;'>
+                📧 <strong>Email:</strong> <a href='mailto:mitchwatkins@gmail.com'>mitchwatkins@gmail.com</a>
+            </p>
+            <p style='font-size: 1.2rem; margin: 10px;'>
+                🐦 <strong>Twitter:</strong> <a href='https://twitter.com/swishlist' target='_blank'>@swishlist</a>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("---")
         
         st.info("""
-        **Response Time:**
-        Usually within 24-48 hours
-        
         **Best for:**
-        - Technical questions
-        - Partnership inquiries
-        - Bug reports
-        - Feature requests
-        """)
+        - Technical questions about the model
+        - Partnership & collaboration inquiries  
+        - Bug reports and data corrections
+        - Media requests
+        - General feedback
         
-        st.markdown("### Follow Swish List")
-        st.markdown("""
-        Stay updated with the latest rankings:
-        
-        🐦 Twitter: [@SwishList](https://twitter.com/swishlist)  
-        📧 Email: mitchwatkins@gmail.com
+        **Response time:** Usually within 24-48 hours
         """)
 
 # Footer
