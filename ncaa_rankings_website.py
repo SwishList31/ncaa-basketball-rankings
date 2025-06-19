@@ -100,7 +100,7 @@ def create_sample_data():
 
 # Header
 st.markdown('<h1 class="main-header">🏀 Swish List Ratings</h1>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Advanced Predictive Model • 80.7% Accuracy</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Nothing But Net Analytics • 80.7% Accuracy</p>', unsafe_allow_html=True)
 
 # Load data
 df = load_rankings()
@@ -151,7 +151,7 @@ filtered_df = filtered_df[
 ]
 
 # Main content area with tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Rankings", "📈 Analysis", "🔍 Team Details", "ℹ️ Methodology"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Rankings", "📈 Analysis", "🔍 Team Details", "ℹ️ Methodology", "📧 Contact"])
 
 with tab1:
     # Key metrics
@@ -438,6 +438,72 @@ with tab4:
         - Early season volatility
         - Injury adjustments
         - Home court variations
+        """)
+
+with tab5:
+    st.subheader("Contact Swish List")
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.markdown("""
+        ### Get in Touch
+        
+        Have questions about the rankings? Want to report an issue? 
+        Interested in collaborating? We'd love to hear from you!
+        """)
+        
+        # Create contact form
+        with st.form("contact_form"):
+            st.markdown("#### Send us a message")
+            
+            # Form fields
+            name = st.text_input("Your Name*", placeholder="John Doe")
+            email = st.text_input("Your Email*", placeholder="john@example.com")
+            subject = st.selectbox(
+                "Subject*",
+                ["General Inquiry", "Bug Report", "Collaboration", "Media Request", "Other"]
+            )
+            message = st.text_area(
+                "Message*", 
+                placeholder="Tell us what's on your mind...",
+                height=150
+            )
+            
+            # Submit button
+            submitted = st.form_submit_button("Send Message", use_container_width=True)
+            
+            if submitted:
+                if name and email and message:
+                    # Create mailto link
+                    mailto_link = f"mailto:mitchwatkins@gmail.com?subject=Swish List - {subject}: {name}&body=From: {name}%0D%0AEmail: {email}%0D%0A%0D%0AMessage:%0D%0A{message.replace(' ', '%20').replace('\n', '%0D%0A')}"
+                    
+                    st.success("✅ Thank you for your message! Click the link below to send via email:")
+                    st.markdown(f"[📧 Send Email](mailto:mitchwatkins@gmail.com?subject=Swish%20List%20-%20{subject}:%20{name}&body=From:%20{name}%0D%0AEmail:%20{email}%0D%0A%0D%0AMessage:%0D%0A{message.replace(' ', '%20').replace('\n', '%0D%0A')})")
+                    st.info("Note: This will open your default email client with the message pre-filled.")
+                else:
+                    st.error("Please fill in all required fields.")
+    
+    with col2:
+        st.markdown("### Quick Info")
+        
+        st.info("""
+        **Response Time:**
+        Usually within 24-48 hours
+        
+        **Best for:**
+        - Technical questions
+        - Partnership inquiries
+        - Bug reports
+        - Feature requests
+        """)
+        
+        st.markdown("### Follow Swish List")
+        st.markdown("""
+        Stay updated with the latest rankings:
+        
+        🐦 Twitter: [@SwishList](https://twitter.com/swishlist)  
+        📧 Email: mitchwatkins@gmail.com
         """)
 
 # Footer
