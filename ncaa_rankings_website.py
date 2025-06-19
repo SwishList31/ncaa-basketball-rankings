@@ -505,7 +505,7 @@ with tab5:
                 📧 <strong>Email:</strong> <a href='mailto:mitchwatkins@gmail.com'>mitchwatkins@gmail.com</a>
             </p>
             <p style='font-size: 1.2rem; margin: 10px;'>
-                🐦 <strong>Twitter:</strong> <a href='https://twitter.com/swishlist' target='_blank'>@swishlist</a>
+                🐦 <strong>Twitter:</strong> <a href='https://twitter.com/swishlist31' target='_blank'>@swishlist31</a>
             </p>
         </div>
         """, unsafe_allow_html=True)
