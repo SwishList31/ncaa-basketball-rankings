@@ -12,7 +12,7 @@ import numpy as np
 
 # Page configuration
 st.set_page_config(
-    page_title="NCAA Basketball Power Rankings",
+    page_title="Swish List Ratings - NCAA Basketball",
     page_icon="🏀",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -22,17 +22,22 @@ st.set_page_config(
 st.markdown("""
 <style>
     .main-header {
-        font-size: 3rem;
-        color: #1e3a8a;
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, #FF6B35, #F7931E);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         text-align: center;
         margin-bottom: 0;
+        font-family: 'Arial Black', sans-serif;
     }
     .sub-header {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         color: #64748b;
         text-align: center;
         margin-top: -10px;
         margin-bottom: 30px;
+        font-weight: 500;
     }
     .metric-card {
         background-color: #f8fafc;
@@ -50,6 +55,12 @@ st.markdown("""
     }
     .stDataFrame {
         font-size: 14px;
+    }
+    /* Swish List brand colors */
+    div[data-testid="metric-container"] {
+        background-color: #FFF5F0;
+        border: 1px solid #FF6B35;
+        border-radius: 8px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -88,7 +99,7 @@ def create_sample_data():
     return pd.DataFrame(data)
 
 # Header
-st.markdown('<h1 class="main-header">🏀 NCAA Basketball Power Rankings</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🏀 Swish List Ratings</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Advanced Predictive Model • 80.7% Accuracy</p>', unsafe_allow_html=True)
 
 # Load data
@@ -96,16 +107,17 @@ df = load_rankings()
 
 # Sidebar
 with st.sidebar:
-    st.markdown("## About")
+    st.markdown("## About Swish List")
     st.markdown("""
-    This ranking system uses an advanced predictive model that weighs:
+    **Swish List Ratings** uses an advanced predictive model that analyzes:
     - **Defensive Rating (30%)**
     - **Offensive Rating (30%)**
     - **Recent Performance (20%)**
     - **Experience (15%)**
     - **Turnover Margin (5%)**
     
-    Model validated at **80.7% accuracy** on 2024-25 season games.
+    Our model has been validated at **80.7% accuracy** on 2024-25 season games,
+    outperforming many established ranking systems.
     """)
     
     # Filter options
@@ -115,12 +127,12 @@ with st.sidebar:
     conferences = ['All'] + sorted(df['Conference'].unique().tolist())
     selected_conf = st.selectbox("Conference", conferences)
     
-    # Rank range filter - DEFAULT TO ALL TEAMS
+    # Rank range filter
     rank_range = st.slider(
         "Rank Range",
         min_value=1,
         max_value=len(df),
-        value=(1, len(df))  # Changed to show all by default
+        value=(1, 25)
     )
     
     # Update info
@@ -159,7 +171,7 @@ with tab1:
     st.markdown("---")
     
     # Main rankings table
-    st.subheader(f"Current Rankings - Showing {len(filtered_df)} Teams")
+    st.subheader("Current Rankings")
     
     # Prepare display dataframe
     display_cols = ['Final_Rank', 'Team', 'Conference', 'Final_Score', 
@@ -189,12 +201,11 @@ with tab1:
     
     display_df['Change'] = display_df['Change'].apply(format_change)
     
-    # Display the table with larger height
+    # Display the table
     st.dataframe(
         display_df,
         use_container_width=True,
         hide_index=True,
-        height=800,  # Make it taller to show more teams
         column_config={
             "Rank": st.column_config.NumberColumn(format="%d"),
             "Score": st.column_config.NumberColumn(format="%.1f"),
@@ -434,7 +445,7 @@ st.markdown("---")
 st.markdown(
     """
     <div style='text-align: center; color: #64748b; font-size: 0.9rem;'>
-    NCAA Basketball Power Rankings | Model by Mitch Watkins | 
+    Swish List Ratings | Created by Mitch Watkins | 
     Data from KenPom.com | Built with Streamlit
     </div>
     """,
