@@ -1,4 +1,4 @@
-streamlit
-pandas
-numpy
-plotly"# Dependencies for NCAA Rankings" 
+streamlit 
+pandas 
+numpy 
+plotly
