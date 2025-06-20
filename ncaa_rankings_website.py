@@ -109,38 +109,9 @@ def create_sample_data():
     
     return pd.DataFrame(data)
 
-# Header with logo
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    # Simple basketball SVG logo
-    st.markdown("""
-    <div style="text-align: center;">
-        <svg width="80" height="80" viewBox="0 0 100 100" style="margin-bottom: -20px;">
-            <!-- Basketball circle -->
-            <circle cx="50" cy="50" r="45" fill="#FF6B35" stroke="#E85D25" stroke-width="3"/>
-            
-            <!-- Basketball lines -->
-            <!-- Center vertical line -->
-            <path d="M 50 5 L 50 95" stroke="#E85D25" stroke-width="2.5" fill="none"/>
-            
-            <!-- Center horizontal line -->
-            <path d="M 5 50 L 95 50" stroke="#E85D25" stroke-width="2.5" fill="none"/>
-            
-            <!-- Left curved line -->
-            <path d="M 25 5 Q 25 50 25 95" stroke="#E85D25" stroke-width="2.5" fill="none"/>
-            
-            <!-- Right curved line -->
-            <path d="M 75 5 Q 75 50 75 95" stroke="#E85D25" stroke-width="2.5" fill="none"/>
-            
-            <!-- Add some shadow/depth -->
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#C94F1A" stroke-width="1" 
-                    stroke-dasharray="0,5" opacity="0.5"/>
-        </svg>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown('<h1 class="main-header">Swish List Ratings</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-header">Nothing But Net Analytics • 80.7% Accuracy</p>', unsafe_allow_html=True)
+# Header
+st.markdown('<h1 class="main-header">🏀 Swish List Ratings</h1>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Nothing But Net Analytics • 80.7% Accuracy</p>', unsafe_allow_html=True)
 
 # Load data
 df = load_rankings()
