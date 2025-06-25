@@ -162,7 +162,7 @@ filtered_df = filtered_df[
 ]
 
 # Main content area with tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Rankings", "📈 Analysis", "🔍 Team Details", "ℹ️ Methodology", "📧 Contact"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📊 Rankings", "📈 Analysis", "🔍 Team Details", "ℹ️ Methodology", "🏀 NBA GOAT", "📧 Contact"])
 
 with tab1:
     # Key metrics
@@ -452,6 +452,228 @@ with tab4:
         """)
 
 with tab5:
+    st.subheader("NBA GOAT Rankings - SWISH Score")
+    
+    # Load NBA GOAT data
+    @st.cache_data
+    def load_nba_rankings():
+        try:
+            df = pd.read_csv('nba_goat_rankings_swish.csv')
+            return df
+        except:
+            # Return empty dataframe if file not found
+            st.error("NBA GOAT rankings file not found. Run the analysis first.")
+            return pd.DataFrame()
+    
+    nba_df = load_nba_rankings()
+    
+    if not nba_df.empty:
+        # Sidebar filters for NBA
+        with st.sidebar:
+            if st.checkbox("Show NBA Filters", value=False):
+                st.markdown("### NBA Filters")
+                
+                # Era filter
+                era_filter = st.selectbox(
+                    "Filter by Era",
+                    ["All Eras", "Pre-1980", "1980s-1990s", "2000s", "2010s+"]
+                )
+                
+                # Minimum games filter
+                min_games = st.slider(
+                    "Minimum Games Played",
+                    min_value=0,
+                    max_value=1500,
+                    value=500
+                )
+        
+        # Key metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Players Ranked", len(nba_df))
+        with col2:
+            goat = nba_df.iloc[0]['name'] if 'name' in nba_df.columns else "Unknown"
+            st.metric("Current GOAT", goat)
+        with col3:
+            avg_swish = nba_df['SWISH_Score'].mean()
+            st.metric("Avg SWISH Score", f"{avg_swish:.1f}")
+        with col4:
+            top_10_avg = nba_df.head(10)['SWISH_Score'].mean()
+            st.metric("Top 10 Avg", f"{top_10_avg:.1f}")
+        
+        st.markdown("---")
+        
+        # Explanation of SWISH Score
+        with st.expander("📊 What is the SWISH Score?"):
+            st.markdown("""
+            The **SWISH Score** is a comprehensive metric that evaluates NBA players across six key dimensions:
+            
+            - **Peak Dominance (20%)**: Best 5-year stretch of their career
+            - **Career Value (20%)**: Total Win Shares and VORP accumulated
+            - **Individual Honors (20%)**: MVPs, All-NBA selections, scoring titles, All-Defense
+            - **Championship Impact (15%)**: Championships, Finals MVPs, playoff performance
+            - **Statistical Excellence (15%)**: Era-adjusted statistics
+            - **Longevity (10%)**: Games played, seasons, and sustained excellence
+            
+            Scores range from 0-100, with 90+ being all-time legendary status.
+            """)
+        
+        # Main rankings table
+        st.subheader("All-Time NBA GOAT Rankings")
+        
+        # Prepare display dataframe
+        display_cols = ['GOAT_Rank', 'name', 'SWISH_Score', 
+                       'peak_dominance_score', 'career_value_score', 
+                       'individual_honors_score', 'championship_impact_score',
+                       'statistical_excellence_score', 'longevity_score']
+        
+        # Check which columns exist
+        available_cols = [col for col in display_cols if col in nba_df.columns]
+        
+        nba_display = nba_df[available_cols].copy()
+        
+        # Rename columns for display
+        column_names = {
+            'GOAT_Rank': 'Rank',
+            'name': 'Player',
+            'SWISH_Score': 'SWISH',
+            'peak_dominance_score': 'Peak',
+            'career_value_score': 'Career',
+            'individual_honors_score': 'Honors',
+            'championship_impact_score': 'Champs',
+            'statistical_excellence_score': 'Stats',
+            'longevity_score': 'Long'
+        }
+        
+        nba_display.rename(columns=column_names, inplace=True)
+        
+        # Format scores to 1 decimal
+        score_cols = ['SWISH', 'Peak', 'Career', 'Honors', 'Champs', 'Stats', 'Long']
+        for col in score_cols:
+            if col in nba_display.columns:
+                nba_display[col] = nba_display[col].round(1)
+        
+        # Display the table
+        st.dataframe(
+            nba_display,
+            use_container_width=True,
+            hide_index=True,
+            height=600,
+            column_config={
+                "Rank": st.column_config.NumberColumn(format="%d", width="small"),
+                "Player": st.column_config.TextColumn(width="medium"),
+                "SWISH": st.column_config.NumberColumn(format="%.1f"),
+                "Peak": st.column_config.ProgressColumn(
+                    help="Peak dominance score",
+                    format="%.1f",
+                    min_value=0,
+                    max_value=100,
+                ),
+                "Career": st.column_config.ProgressColumn(
+                    help="Career value score",
+                    format="%.1f",
+                    min_value=0,
+                    max_value=100,
+                ),
+                "Honors": st.column_config.ProgressColumn(
+                    help="Individual honors score",
+                    format="%.1f",
+                    min_value=0,
+                    max_value=100,
+                ),
+                "Champs": st.column_config.ProgressColumn(
+                    help="Championship impact score",
+                    format="%.1f",
+                    min_value=0,
+                    max_value=100,
+                ),
+                "Stats": st.column_config.ProgressColumn(
+                    help="Statistical excellence score",
+                    format="%.1f",
+                    min_value=0,
+                    max_value=100,
+                ),
+                "Long": st.column_config.ProgressColumn(
+                    help="Longevity score",
+                    format="%.1f",
+                    min_value=0,
+                    max_value=100,
+                ),
+            }
+        )
+        
+        # Analysis section
+        st.markdown("---")
+        st.subheader("GOAT Tier Analysis")
+        
+        # Create tiers
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("#### 🐐 GOAT Tier (90+)")
+            goat_tier = nba_df[nba_df['SWISH_Score'] >= 90]
+            if not goat_tier.empty:
+                for _, player in goat_tier.iterrows():
+                    st.write(f"**{player['name']}** - {player['SWISH_Score']:.1f}")
+            else:
+                st.write("*No players in this tier*")
+        
+        with col2:
+            st.markdown("#### 👑 Legendary (80-89)")
+            legend_tier = nba_df[(nba_df['SWISH_Score'] >= 80) & (nba_df['SWISH_Score'] < 90)]
+            if not legend_tier.empty:
+                for _, player in legend_tier.iterrows():
+                    st.write(f"**{player['name']}** - {player['SWISH_Score']:.1f}")
+        
+        with col3:
+            st.markdown("#### ⭐ All-Time Great (70-79)")
+            great_tier = nba_df[(nba_df['SWISH_Score'] >= 70) & (nba_df['SWISH_Score'] < 80)]
+            if not great_tier.empty:
+                for _, player in great_tier.iterrows():
+                    st.write(f"**{player['name']}** - {player['SWISH_Score']:.1f}")
+        
+        # Fun facts
+        st.markdown("---")
+        st.subheader("Interesting Insights")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Highest individual category scores
+            st.markdown("#### Category Leaders")
+            
+            categories = [
+                ('Peak Dominance', 'peak_dominance_score'),
+                ('Career Value', 'career_value_score'),
+                ('Individual Honors', 'individual_honors_score'),
+                ('Championship Impact', 'championship_impact_score'),
+                ('Statistical Excellence', 'statistical_excellence_score'),
+                ('Longevity', 'longevity_score')
+            ]
+            
+            for cat_name, cat_col in categories:
+                if cat_col in nba_df.columns:
+                    leader = nba_df.loc[nba_df[cat_col].idxmax()]
+                    st.write(f"**{cat_name}**: {leader['name']} ({leader[cat_col]:.1f})")
+        
+        with col2:
+            # Biggest surprises
+            st.markdown("#### Notable Rankings")
+            
+            # Find players with biggest difference from common perception
+            if 'championships' in nba_df.columns:
+                # Players with 0 rings in top 20
+                ringless = nba_df[(nba_df['GOAT_Rank'] <= 20) & (nba_df['championships'] == 0)]
+                if not ringless.empty:
+                    st.write("**Top 20 without a ring:**")
+                    for _, player in ringless.iterrows():
+                        st.write(f"- {player['name']} (#{int(player['GOAT_Rank'])})")
+    
+    else:
+        st.warning("NBA GOAT rankings data not found. Please run the analysis script first.")
+
+with tab6:
     st.subheader("Contact Swish List")
     
     col1, col2, col3 = st.columns([1, 2, 1])
