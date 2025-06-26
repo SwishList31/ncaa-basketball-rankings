@@ -468,25 +468,6 @@ with tab5:
     nba_df = load_nba_rankings()
     
     if not nba_df.empty:
-        # Sidebar filters for NBA
-        with st.sidebar:
-            if st.checkbox("Show NBA Filters", value=False):
-                st.markdown("### NBA Filters")
-                
-                # Era filter
-                era_filter = st.selectbox(
-                    "Filter by Era",
-                    ["All Eras", "Pre-1980", "1980s-1990s", "2000s", "2010s+"]
-                )
-                
-                # Minimum games filter
-                min_games = st.slider(
-                    "Minimum Games Played",
-                    min_value=0,
-                    max_value=1500,
-                    value=500
-                )
-        
         # Key metrics
         col1, col2, col3, col4 = st.columns(4)
         
@@ -519,6 +500,45 @@ with tab5:
             Scores range from 0-100, with 90+ being all-time legendary status.
             """)
         
+        # Sidebar filters for NBA
+        with st.sidebar:
+            st.markdown("### NBA Filters")
+            
+            # Rank range filter
+            nba_rank_range = st.slider(
+                "NBA Rank Range",
+                min_value=1,
+                max_value=len(nba_df),
+                value=(1, 50),
+                key="nba_rank_filter"
+            )
+            
+            # Championship filter
+            min_championships = st.slider(
+                "Minimum Championships",
+                min_value=0,
+                max_value=11,
+                value=0,
+                key="nba_champ_filter"
+            )
+            
+            # SWISH Score filter
+            min_swish = st.slider(
+                "Minimum SWISH Score",
+                min_value=0,
+                max_value=100,
+                value=0,
+                key="nba_swish_filter"
+            )
+        
+        # Filter the dataframe
+        filtered_nba = nba_df[
+            (nba_df['GOAT_Rank'] >= nba_rank_range[0]) & 
+            (nba_df['GOAT_Rank'] <= nba_rank_range[1]) &
+            (nba_df['championships'] >= min_championships) &
+            (nba_df['SWISH_Score'] >= min_swish)
+        ]
+        
         # Main rankings table
         st.subheader("All-Time NBA GOAT Rankings")
         
@@ -526,12 +546,13 @@ with tab5:
         display_cols = ['GOAT_Rank', 'name', 'SWISH_Score', 
                        'peak_dominance_score', 'career_value_score', 
                        'individual_honors_score', 'championship_impact_score',
-                       'statistical_excellence_score', 'longevity_score']
+                       'statistical_excellence_score', 'longevity_score',
+                       'career_ppg', 'career_rpg', 'career_apg', 'championships', 'mvp']
         
         # Check which columns exist
-        available_cols = [col for col in display_cols if col in nba_df.columns]
+        available_cols = [col for col in display_cols if col in filtered_nba.columns]
         
-        nba_display = nba_df[available_cols].copy()
+        nba_display = filtered_nba[available_cols].copy()
         
         # Rename columns for display
         column_names = {
@@ -543,12 +564,24 @@ with tab5:
             'individual_honors_score': 'Honors',
             'championship_impact_score': 'Champs',
             'statistical_excellence_score': 'Stats',
-            'longevity_score': 'Long'
+            'longevity_score': 'Long',
+            'career_ppg': 'PPG',
+            'career_rpg': 'RPG',
+            'career_apg': 'APG',
+            'championships': 'Rings',
+            'mvp': 'MVPs'
         }
         
         nba_display.rename(columns=column_names, inplace=True)
         
-        # Format scores to 1 decimal
+        # Format numeric columns
+        if 'PPG' in nba_display.columns:
+            nba_display['PPG'] = nba_display['PPG'].round(1)
+        if 'RPG' in nba_display.columns:
+            nba_display['RPG'] = nba_display['RPG'].round(1)
+        if 'APG' in nba_display.columns:
+            nba_display['APG'] = nba_display['APG'].round(1)
+        
         score_cols = ['SWISH', 'Peak', 'Career', 'Honors', 'Champs', 'Stats', 'Long']
         for col in score_cols:
             if col in nba_display.columns:
@@ -563,7 +596,7 @@ with tab5:
             column_config={
                 "Rank": st.column_config.NumberColumn(format="%d", width="small"),
                 "Player": st.column_config.TextColumn(width="medium"),
-                "SWISH": st.column_config.NumberColumn(format="%.1f"),
+                "SWISH": st.column_config.NumberColumn(format="%.1f", help="Overall SWISH Score"),
                 "Peak": st.column_config.ProgressColumn(
                     help="Peak dominance score",
                     format="%.1f",
@@ -600,6 +633,11 @@ with tab5:
                     min_value=0,
                     max_value=100,
                 ),
+                "PPG": st.column_config.NumberColumn(format="%.1f", help="Career Points Per Game"),
+                "RPG": st.column_config.NumberColumn(format="%.1f", help="Career Rebounds Per Game"),
+                "APG": st.column_config.NumberColumn(format="%.1f", help="Career Assists Per Game"),
+                "Rings": st.column_config.NumberColumn(format="%d", help="Championships Won"),
+                "MVPs": st.column_config.NumberColumn(format="%d", help="MVP Awards"),
             }
         )
         
@@ -615,7 +653,7 @@ with tab5:
             goat_tier = nba_df[nba_df['SWISH_Score'] >= 90]
             if not goat_tier.empty:
                 for _, player in goat_tier.iterrows():
-                    st.write(f"**{player['name']}** - {player['SWISH_Score']:.1f}")
+                    st.write(f"**{int(player['GOAT_Rank'])}. {player['name']}** - {player['SWISH_Score']:.1f}")
             else:
                 st.write("*No players in this tier*")
         
@@ -623,15 +661,15 @@ with tab5:
             st.markdown("#### 👑 Legendary (80-89)")
             legend_tier = nba_df[(nba_df['SWISH_Score'] >= 80) & (nba_df['SWISH_Score'] < 90)]
             if not legend_tier.empty:
-                for _, player in legend_tier.iterrows():
-                    st.write(f"**{player['name']}** - {player['SWISH_Score']:.1f}")
+                for _, player in legend_tier.head(10).iterrows():
+                    st.write(f"**{int(player['GOAT_Rank'])}. {player['name']}** - {player['SWISH_Score']:.1f}")
         
         with col3:
             st.markdown("#### ⭐ All-Time Great (70-79)")
             great_tier = nba_df[(nba_df['SWISH_Score'] >= 70) & (nba_df['SWISH_Score'] < 80)]
             if not great_tier.empty:
-                for _, player in great_tier.iterrows():
-                    st.write(f"**{player['name']}** - {player['SWISH_Score']:.1f}")
+                for _, player in great_tier.head(10).iterrows():
+                    st.write(f"**{int(player['GOAT_Rank'])}. {player['name']}** - {player['SWISH_Score']:.1f}")
         
         # Fun facts
         st.markdown("---")
@@ -669,6 +707,58 @@ with tab5:
                     st.write("**Top 20 without a ring:**")
                     for _, player in ringless.iterrows():
                         st.write(f"- {player['name']} (#{int(player['GOAT_Rank'])})")
+                
+                # MVPs with low rankings
+                st.write("\n**MVPs ranked 25+:**")
+                mvp_low = nba_df[(nba_df['GOAT_Rank'] >= 25) & (nba_df['mvp'] >= 1)]
+                if not mvp_low.empty:
+                    for _, player in mvp_low.head(5).iterrows():
+                        st.write(f"- {player['name']} (#{int(player['GOAT_Rank'])}) - {int(player['mvp'])} MVP")
+        
+        # Player comparison tool
+        st.markdown("---")
+        st.subheader("Player Comparison")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            player1 = st.selectbox("Select Player 1", nba_df['name'].tolist(), index=0)
+        with col2:
+            player2 = st.selectbox("Select Player 2", nba_df['name'].tolist(), index=1)
+        
+        if player1 and player2:
+            p1_data = nba_df[nba_df['name'] == player1].iloc[0]
+            p2_data = nba_df[nba_df['name'] == player2].iloc[0]
+            
+            # Create comparison dataframe
+            comparison_data = {
+                'Metric': ['SWISH Score', 'Peak', 'Career', 'Honors', 'Championships', 'Stats', 'Longevity',
+                          'PPG', 'RPG', 'APG', 'Rings', 'MVPs', 'All-Stars'],
+                player1: [
+                    p1_data['SWISH_Score'], p1_data['peak_dominance_score'], p1_data['career_value_score'],
+                    p1_data['individual_honors_score'], p1_data['championship_impact_score'],
+                    p1_data['statistical_excellence_score'], p1_data['longevity_score'],
+                    p1_data['career_ppg'], p1_data['career_rpg'], p1_data['career_apg'],
+                    p1_data['championships'], p1_data['mvp'], p1_data['all_star']
+                ],
+                player2: [
+                    p2_data['SWISH_Score'], p2_data['peak_dominance_score'], p2_data['career_value_score'],
+                    p2_data['individual_honors_score'], p2_data['championship_impact_score'],
+                    p2_data['statistical_excellence_score'], p2_data['longevity_score'],
+                    p2_data['career_ppg'], p2_data['career_rpg'], p2_data['career_apg'],
+                    p2_data['championships'], p2_data['mvp'], p2_data['all_star']
+                ]
+            }
+            
+            comp_df = pd.DataFrame(comparison_data)
+            
+            # Format the numbers
+            for col in [player1, player2]:
+                comp_df.loc[0:6, col] = comp_df.loc[0:6, col].round(1)
+                comp_df.loc[7:9, col] = comp_df.loc[7:9, col].round(1)
+                comp_df.loc[10:12, col] = comp_df.loc[10:12, col].astype(int)
+            
+            st.dataframe(comp_df, use_container_width=True, hide_index=True)
     
     else:
         st.warning("NBA GOAT rankings data not found. Please run the analysis script first.")
