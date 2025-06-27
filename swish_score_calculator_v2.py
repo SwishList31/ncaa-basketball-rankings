@@ -81,25 +81,52 @@ class SwishScoreCalculatorV2:
         
     def assign_player_eras(self):
         """Assign primary era to each player based on peak years"""
-        def get_player_era(start_year, end_year):
-            # Find era with most overlap to player's career
+        def get_player_era(row):
+            # Try to use actual career years if available
+            start_year = row.get('career_start', None)
+            end_year = row.get('career_end', None)
+            
+            # If we don't have career years, estimate from other data
+            if pd.isna(start_year) or pd.isna(end_year):
+                # Use draft year or other indicators if available
+                name = row.get('name', '')
+                
+                # Known player eras
+                if any(n in name for n in ['Russell', 'Chamberlain', 'Robertson', 'West', 'Baylor']):
+                    return 'pre_merger'
+                elif any(n in name for n in ['Kareem', 'Erving', 'Moses']):
+                    return 'early_modern'
+                elif any(n in name for n in ['Jordan', 'Magic', 'Bird', 'Hakeem', 'Barkley', 'Malone', 'Stockton']):
+                    return 'golden_age'
+                elif any(n in name for n in ['Duncan', 'Kobe', 'Shaq', 'Garnett', 'Dirk', 'Nash', 'Iverson']):
+                    return 'post_jordan'
+                elif any(n in name for n in ['LeBron', 'Durant', 'Curry', 'Giannis', 'Kawhi', 'Harden', 'Chris Paul']):
+                    return 'modern'
+                else:
+                    # Default based on championships if available
+                    championships = row.get('championships', 0)
+                    if championships > 0:
+                        # Rough guess based on typical championship years
+                        return 'modern'  # Safe default
+                    return 'modern'
+            
+            # Calculate career midpoint
             career_mid = (start_year + end_year) / 2
             
-            for era_name, era_info in self.era_stats.items():
-                era_start, era_end = era_info['years']
-                if era_start <= career_mid <= era_end:
-                    return era_name
-            
-            # Default to modern if no match
-            return 'modern'
+            # Assign based on career midpoint
+            if career_mid < 1976:
+                return 'pre_merger'
+            elif career_mid < 1985:
+                return 'early_modern'
+            elif career_mid < 2000:
+                return 'golden_age'
+            elif career_mid < 2010:
+                return 'post_jordan'
+            else:
+                return 'modern'
         
         # Add era column
-        self.player_data['era'] = self.player_data.apply(
-            lambda x: get_player_era(
-                x.get('career_start', 1990),
-                x.get('career_end', 2020)
-            ), axis=1
-        )
+        self.player_data['era'] = self.player_data.apply(get_player_era, axis=1)
     
     def calculate_era_adjusted_stat(self, player_stat, stat_name, player_era):
         """Calculate era-adjusted version of a stat"""
